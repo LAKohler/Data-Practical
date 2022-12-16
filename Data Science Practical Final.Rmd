@@ -1,0 +1,272 @@
+---
+title: "Data Practical - Best Test"
+author: "Lori Kohler"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+bibliography: DataPracticalBibliography.bib
+---
+
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dbplyr)
+library(dtplyr)
+library(ggridges)
+library(knitr)
+```
+
+***
+
+![](examtaking.jpg){width="50%"}
+
+Photo by Jessica Lewis Creative
+
+
+# Best Test  
+
+
+## Introduction
+
+Who would not want to improve their test-taking savvy and test results? There's nothing worse that spending hours and hours studying for a test only to be sitting in the exam and be struck with a mental block or worse, to realise that you hadn't studied enough, that you hadn't covered the right topics or much to your horror, some concepts are completely foreign to you.
+
+There are large quantites of scientific literature out there to respond to the issues raised above. In this paper I will attempt to investigate a few of these questions by testing out a few hypothesis we some sample test score data. Specifically, Math, Reading and Writing scores. With this dataset we also have information regarding parental education level, test preparation and some demographic information. The data collected is from a random sample of 16 to 19 year old international students that sat the SAT and were willing to share some of their data for research purposes in order to better understand the role of parental education level, gender, and the potential relationship, if any, between test scores.
+
+***
+
+### About the "exams" dataset
+
+This dataset of exam scores was found on [www.kaggle.com](https://www.kaggle.com/datasets/sudhanshu2198/analyzing-exam-scores).
+
+```{r}
+exams <- read_csv("exams.csv")
+head(exams, 10) %>% kable()
+```
+
+
+### Information included in the dataset:
+
+* gender - male / female
+* parental_education - one parent's highest education level
+* test_prep - opted for the test preparation course or not
+* math_score - math exam score
+* reading_score - reading exam score
+* writing_score - writing exam score
+
+This dataset includes 1000 entries, 52% are female students, 48% are male students.
+
+The types of data included in the dataset are:
+
+* **Categorical, nominal data**: parents' education level
+* **Categorical, binary data**: gender, test preparation
+* **Numerical, discrete data**: math, reading, writing scores
+
+
+***
+
+## Hypotheses
+
+### Parents' education level
+
+**H1: Parent education level will be positively correlated with student test scores.**
+
+H0: Parents education level will not be correlated with student test scores.
+
+HA: Parents education level will only be positively correlated with one of the student's test scores.
+
+
+
+### How following a test preparation course influences test scores
+
+**H1: Taking an SAT preparation course positively influences test scores.**
+
+H0: There will be no benefit in taking a test preparation course.
+
+HA: There will be a negative correlation taking a test preparation course and test scores.
+
+
+
+### How gender influences test scores
+
+**H1: Gender will influence test scores.**
+
+H0: There will be no significant difference between women and men's test scores.
+
+HA: Men will have higher math scores, women will have higher reading and writing scores.
+
+
+***
+
+The following empirical studies provide some background information on the questions posed in this paper.
+
+
+#### New Perspectives on the Correlation of Scholastic Assessment Test Scores, High School Grades, and Socioeconomic Factors? [@Zwick2007]
+
+Rebecca Zwick and Jennifer Greif Green
+
+Journal of Educational Measurement, Spring 2007.
+
+***
+
+#### Explaining Gender Differences on SAT-Math Items [@Byrnes1993]
+
+James P. Byrnes and Sayuri Takahira
+
+Developmental Psychology, 1993, Volume 29, No. 5, 805-810.
+
+***
+
+#### Shadow Education, American Style: Test Preparation, the SAT and College Enrollment [@Buchmann2010]
+
+Claudia Buchmann, Dennis J. Condron and Vincent J. Roscigno
+ 
+Social Forces, Oxford University Press, December 2010, Volume 89, No. 2, pp. 435-461.
+
+
+***
+
+## Methods
+
+The Scholastic Aptitude Test (SAT) is a standardized test that is taken by students between the ages of 16-19 that want to go on to college or university in the US. The test lasts 3 hours, and includes questions related to biology, chemistry, physics, US and world history, math, literature and languages. Most US colleges and universities require an SAT score with any application, among other requirements.
+
+[All about SATs](https://www.princetonreview.com/college/sat-information)
+
+After completing the SAT, student were asked if their would consent to sharing their scores for research purposes. The exact aim of the study was explained to them in detail and the resulting data for 1000 students was collected, based on their SAT submission forms.
+
+The data collected cleaned up and only the essential entries that were relevant for our analysis were further examined. A linear regression was performed and the following series of graphs were generated in order to determine the accuracy of our hypothesis.
+
+
+***
+
+## Results
+
+#### Relationship between the parent's education level and student test scores
+
+```{r}
+qplot(data = exams, x = parental_education, y = math_score, fill = parental_education, geom = "boxplot", title = "A comparison between parental education and student math scores")
+```
+
+```{r}
+qplot(data = exams, x = parental_education, y = reading_score, fill = parental_education, geom = "boxplot", title = "A comparison between parental education and student reading scores")
+```
+
+```{r}
+qplot(data = exams, x = parental_education, y = writing_score, fill = parental_education, geom = "boxplot", title = "A comparison between parental education and student writing scores")
+```
+
+The three boxplots above indicate that indeed, parental education level influences student overall scores (math, reading and writing). This is especially evident in the case of reading and writing scores. The higher the parents' education level, the better the student's test score. The most significant difference is seen where the parent's education level is a Bachelor or Master's degree. This result is in keeping with the first hypothesis mentioned above.
+
+#### How following a test preparation course influences test scores
+
+```{r}
+mutate(exams, average_score = (math_score + reading_score + writing_score)/3)
+```
+
+```{r}
+exams <- mutate(exams, average_score = (math_score + reading_score + writing_score)/3)
+
+ggplot(exams, aes(x = average_score)) + 
+  geom_histogram(aes(fill = test_prep)) + 
+  scale_fill_manual(values = c("#5555FF", "#AAAAFF")) + 
+  labs(title = "How test preparation influences test scores",
+       x = "Students",
+       y = "Average Scores")
+```
+
+The histogram above includes the sample of students in this dataset (in bins of 10 = 1000 students) on the x axis and the average scores (math, reading and writing scores) on the y-axis. The light purple reflects the students that did not enroll in an SAT test preparation course and the dark purple are those that did. Opting to enroll in an SAT preparation course before sitting the SAT is evidently a good idea. Consequently, overall test scores are positively influenced by following a preparation course, which is in keeping with the hypothesis mentioned above.
+
+#### How gender influences test scores
+
+```{r}
+plot1 <- ggplot(exams, aes(x = math_score, y = gender, fill = gender))+
+  geom_density_ridges(aes(fill = gender)) + 
+  scale_fill_manual(values = c("#E7B800", "#00CFBB")) + 
+  labs(title = "How gender influences student math scores",
+       x = "Math Scores",
+       y = "Gender")
+plot1
+
+plot2 <- ggplot(exams, aes(x = reading_score, y = gender, fill = gender))+
+  geom_density_ridges(aes(fill = gender)) + 
+  scale_fill_manual(values = c("#E7B800", "#00CFBB")) + 
+  labs(title = "How gender influences student reading scores",
+       x = "Reading Scores",
+       y = "Gender")
+plot2
+
+plot3 <- ggplot(exams, aes(x = writing_score, y = gender, fill = gender))+
+  geom_density_ridges(aes(fill = gender)) + 
+  scale_fill_manual(values = c("#E7B800", "#00CFBB")) + 
+  labs(title = "How gender influences student writing scores",
+       x = "Writing Scores",
+       y = "Gender")
+plot3
+```
+
+The first of the ridge graphs above reflects math scores for each gender. This graph is the most telling of the tryptic; indicating that male student test scores are higher than female scores. But, for reading and writing scores, the graphs above are less telling. It is clear that there is considerable correlation between reading and writing scores but the differences between male and female scores is somewhat less clear. The peak of the male scores is steeper than the female scores, hovering around the 65 to 75 point rage and the majority of female scores range between 60 and 90 points, both for reading and writing scores, with only slight differences between both scores. We might need some statistics to help clarify these results, just to be sure. It is evident however, that gender does influence test scores, what was predicted in the above mentioned hypothesis. 
+
+### Some statistics
+
+Let's think about what kind of statistical test we can use with these data. One obvious comparison is whether the mean average scores are statistically different between male and female students.
+
+First we filter the male average scores, so that we can see what their distribution is. From the ridge graphs above, they look normally distributed, but let's check to be sure.
+
+```{r}
+male <- exams %>% filter(gender == "male") %>% select(gender, average_score)
+```
+
+We check if those scores are normally distributed - if yes (also for female scores) we can use parametric statistics, if not, we'll need to use a non-parametric test.
+
+```{r}
+qqnorm(male$average_score, pch = 1, frame = FALSE)
+qqline(male$average_score, col = "steelblue", lwd = 2)
+```
+
+And for the female average test scores. The points also fall roughly on the qqline. We are good to use a parametric test.
+
+```{r}
+female <- exams %>% filter(gender == "female") %>% select(gender, average_score)
+qqnorm(female$average_score, pch = 1, frame = FALSE)
+qqline(female$average_score, col = "steelblue", lwd = 2)
+```
+
+We want to compare mean scores and [there are many different means](http://www.sthda.com/english/wiki/comparing-means-in-r) to do that depending on our data and whether or not it is normally distributed. 
+
+We have two independent groups (female and male) and their test scores, so we can use a t-test.
+
+```{r}
+t.test(female$average_score, male$average_score)
+```
+
+And one way to visualize it can be found below.
+
+```{r}
+both <- rbind(male, female)
+qplot(data = both, x = gender, y = average_score, fill = gender, geom = "boxplot")
+```
+
+The boxplot above, with average female student scores in pink and average male student scores in blue, clearly indicate that overall female test scores are higher than male scores. However, this difference isn't significant, as evident from the Welch Sample T-Test scores included above. The average female student score is 68.93 and the average male score is 66.57.
+
+***
+
+## Conclusion
+
+In conclusion, let's return to our hypotheses mentioned above. Parent education is most influential on student test scores in the case where a parent has a Bachelor's or a Master's degree. Taking a test preparation course before sitting the SAT is certainly beneficial and positively influences overall test scores. In regards to gender scores, the ridge graphs are somewhat less clear. A Welch Sample T-Test proves that overall female scores are indeed higher than male scores (see scores above) but not substantially. The third hypothesis stated that gender would influence test scores, without being making any specific predictions. The exact results of this gender difference are depicted above. Consequently, all three of the hypothesis included above can be accepted. This is also in keeping with the literature referred to at the beginning of this paper.
+
+Further research could look into how parental education influences female and male student scores and if these vary according to gender. More statistical analysis could have been done here to further assess the precise difference between taking an SAT preparation course and not, to quantify the added value. One could include an analysis of which socio-economic groups are most likely to enroll in a test preparation course and why this might be. This type of analysis can provide important insight in helping students achieve academic success.
+
+
+***
+
+## References
+
+
+
+
+
+
+
+
